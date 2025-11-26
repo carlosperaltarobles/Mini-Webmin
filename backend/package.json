@@ -1,0 +1,26 @@
+{
+  "name": "la-chanchona-backend",
+  "version": "1.0.0",
+  "description": "Backend para administración de usuarios y grupos en Linux",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "linux",
+    "user-management",
+    "webmin"
+  ],
+  "author": "La Chanchona Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "express-validator": "^7.2.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

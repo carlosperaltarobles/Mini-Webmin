@@ -1,0 +1,21 @@
+# Node modules
+backend/node_modules/
+frontend/node_modules/
+
+# Logs
+*.log
+
+# Build outputs
+frontend/dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Lock files
+backend/package-lock.json
+frontend/package-lock.json
