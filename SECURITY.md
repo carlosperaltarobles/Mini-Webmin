@@ -28,11 +28,13 @@ sudo visudo -f /etc/sudoers.d/la-chanchona
 Copia y pega el siguiente contenido, reemplazando `TU_USUARIO` con tu nombre de usuario:
 
 ```sudoers
-# La Chanchona - Permisos para administración de usuarios
+# La Chanchona - Permisos para administración de usuarios y grupos
 # Archivo: /etc/sudoers.d/la-chanchona
 # 
 # Importante: Reemplaza TU_USUARIO con el usuario que ejecuta la aplicación
 #
+
+# ==================== GESTIÓN DE USUARIOS ====================
 
 # Permitir adduser sin contraseña (crear usuarios)
 TU_USUARIO ALL=(root) NOPASSWD: /usr/sbin/adduser
@@ -46,6 +48,19 @@ TU_USUARIO ALL=(root) NOPASSWD: /usr/sbin/usermod
 # Permitir chpasswd sin contraseña (cambiar contraseñas)
 TU_USUARIO ALL=(root) NOPASSWD: /usr/sbin/chpasswd
 
+# ==================== GESTIÓN DE GRUPOS ====================
+
+# Permitir addgroup sin contraseña (crear grupos)
+TU_USUARIO ALL=(root) NOPASSWD: /usr/sbin/addgroup
+
+# Permitir delgroup sin contraseña (eliminar grupos)
+TU_USUARIO ALL=(root) NOPASSWD: /usr/sbin/delgroup
+
+# Permitir gpasswd sin contraseña (administrar miembros de grupos)
+TU_USUARIO ALL=(root) NOPASSWD: /usr/bin/gpasswd
+
+# ==================== UTILIDADES ====================
+
 # Permitir bash para pipes de chpasswd
 TU_USUARIO ALL=(root) NOPASSWD: /bin/bash
 ```
@@ -53,11 +68,14 @@ TU_USUARIO ALL=(root) NOPASSWD: /bin/bash
 ### Ejemplo concreto para el usuario "carlos":
 
 ```sudoers
-# La Chanchona - Permisos para administración de usuarios
+# La Chanchona - Permisos para administración de usuarios y grupos
 carlos ALL=(root) NOPASSWD: /usr/sbin/adduser
 carlos ALL=(root) NOPASSWD: /usr/sbin/deluser
 carlos ALL=(root) NOPASSWD: /usr/sbin/usermod
 carlos ALL=(root) NOPASSWD: /usr/sbin/chpasswd
+carlos ALL=(root) NOPASSWD: /usr/sbin/addgroup
+carlos ALL=(root) NOPASSWD: /usr/sbin/delgroup
+carlos ALL=(root) NOPASSWD: /usr/bin/gpasswd
 carlos ALL=(root) NOPASSWD: /bin/bash
 ```
 
@@ -74,6 +92,9 @@ sudo chmod 440 /etc/sudoers.d/la-chanchona
 sudo adduser --help
 sudo deluser --help
 sudo usermod --help
+sudo addgroup --help
+sudo delgroup --help
+sudo gpasswd --help
 ```
 
 ## Medidas de seguridad implementadas
@@ -173,6 +194,10 @@ server {
 | `chpasswd` | Cambiar contraseña | `echo "user:pass" \| sudo chpasswd` |
 | `usermod` | Modificar usuario | `sudo usermod -aG sudo newuser` |
 | `deluser` | Eliminar usuario | `sudo deluser newuser` |
+| `addgroup` | Crear grupo | `sudo addgroup nuevo-grupo` |
+| `delgroup` | Eliminar grupo | `sudo delgroup mi-grupo` |
+| `gpasswd -a` | Añadir usuario a grupo | `sudo gpasswd -a usuario grupo` |
+| `gpasswd -d` | Remover usuario de grupo | `sudo gpasswd -d usuario grupo` |
 
 ## Checklist de seguridad
 

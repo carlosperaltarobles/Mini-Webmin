@@ -117,3 +117,67 @@ export const getUserValidation = [
   
   handleValidationErrors
 ];
+
+// ==================== VALIDACIONES DE GRUPOS ====================
+
+/**
+ * Validaciones para crear grupo
+ */
+export const createGroupValidation = [
+  body('name')
+    .trim()
+    .notEmpty().withMessage('El nombre del grupo es requerido')
+    .isLength({ min: 1, max: 32 }).withMessage('El nombre debe tener entre 1 y 32 caracteres')
+    .matches(/^[a-z][a-z0-9_-]*$/).withMessage('El nombre debe iniciar con letra minúscula y solo contener letras minúsculas, números, guiones y guiones bajos'),
+  
+  handleValidationErrors
+];
+
+/**
+ * Validaciones para obtener/eliminar grupo específico
+ */
+export const getGroupValidation = [
+  param('groupname')
+    .trim()
+    .notEmpty().withMessage('El nombre del grupo es requerido')
+    .matches(/^[a-z][a-z0-9_-]*$/).withMessage('Nombre de grupo inválido'),
+  
+  handleValidationErrors
+];
+
+/**
+ * Validaciones para eliminar grupo
+ */
+export const deleteGroupValidation = [
+  param('groupname')
+    .trim()
+    .notEmpty().withMessage('El nombre del grupo es requerido')
+    .matches(/^[a-z][a-z0-9_-]*$/).withMessage('Nombre de grupo inválido'),
+  
+  handleValidationErrors
+];
+
+/**
+ * Validaciones para actualizar miembros del grupo
+ */
+export const updateGroupMembersValidation = [
+  param('groupname')
+    .trim()
+    .notEmpty().withMessage('El nombre del grupo es requerido')
+    .matches(/^[a-z][a-z0-9_-]*$/).withMessage('Nombre de grupo inválido'),
+  
+  body('members')
+    .isArray().withMessage('Los miembros deben ser un array')
+    .custom((members) => {
+      if (members && members.length > 0) {
+        for (const member of members) {
+          if (!/^[a-z][a-z0-9_-]*$/.test(member)) {
+            throw new Error(`Nombre de usuario inválido: ${member}`);
+          }
+        }
+      }
+      return true;
+    }),
+  
+  handleValidationErrors
+];

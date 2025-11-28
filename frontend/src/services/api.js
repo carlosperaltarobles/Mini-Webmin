@@ -106,6 +106,34 @@ export const groupService = {
   async get(groupname) {
     const { data } = await api.get(`/groups/${groupname}`)
     return data
+  },
+
+  /**
+   * Crea un nuevo grupo
+   * @param {string} name - Nombre del grupo
+   */
+  async create(name) {
+    const { data } = await api.post('/groups', { name })
+    return data
+  },
+
+  /**
+   * Elimina un grupo
+   * @param {string} groupname
+   */
+  async delete(groupname) {
+    const { data } = await api.delete(`/groups/${groupname}`)
+    return data
+  },
+
+  /**
+   * Actualiza los miembros de un grupo
+   * @param {string} groupname
+   * @param {Array<string>} members - Lista de usuarios miembros
+   */
+  async updateMembers(groupname, members) {
+    const { data } = await api.put(`/groups/${groupname}/members`, { members })
+    return data
   }
 }
 

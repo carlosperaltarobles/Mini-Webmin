@@ -353,6 +353,135 @@ export async function getGroup(groupname) {
   }
 }
 
+/**
+ * Crea un nuevo grupo en el sistema
+ * @param {string} groupname - Nombre del grupo a crear
+ * @returns {Promise<Object>} Información del grupo creado
+ */
+export async function createGroup(groupname) {
+  if (!isValidGroupname(groupname)) {
+    throw new Error('Nombre de grupo inválido. Solo letras minúsculas, números, guiones y guiones bajos.');
+  }
+  
+  try {
+    // Verificar si el grupo ya existe
+    try {
+      await executeReadCommand(`getent group ${escapeShellArg(groupname)}`);
+      throw new Error('El grupo ya existe');
+    } catch (e) {
+      // Si no existe, continuamos (getent falla si no encuentra el grupo)
+      if (e.message === 'El grupo ya existe') throw e;
+    }
+    
+    const safeGroupname = escapeShellArg(groupname);
+    
+    // Crear el grupo con addgroup
+    await executeCommand(`addgroup ${safeGroupname}`);
+    
+    // Retornar información del grupo creado
+    return await getGroup(groupname);
+  } catch (error) {
+    console.error(`[SystemUserService] Error creando grupo ${groupname}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Elimina un grupo del sistema
+ * @param {string} groupname - Nombre del grupo a eliminar
+ * @returns {Promise<boolean>}
+ */
+export async function deleteGroup(groupname) {
+  if (!isValidGroupname(groupname)) {
+    throw new Error('Nombre de grupo inválido');
+  }
+  
+  // Proteger grupos críticos del sistema
+  const protectedGroups = ['root', 'sudo', 'adm', 'www-data', 'shadow', 'disk', 'wheel', 'staff', 'users'];
+  if (protectedGroups.includes(groupname)) {
+    throw new Error('No se puede eliminar este grupo del sistema');
+  }
+  
+  try {
+    const safeGroupname = escapeShellArg(groupname);
+    
+    // Verificar que el grupo existe
+    await getGroup(groupname);
+    
+    // Usar delgroup para eliminar el grupo
+    await executeCommand(`delgroup ${safeGroupname}`);
+    
+    return true;
+  } catch (error) {
+    console.error(`[SystemUserService] Error eliminando grupo ${groupname}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Actualiza los miembros de un grupo
+ * Calcula diferencias y añade/remueve usuarios según corresponda
+ * @param {string} groupname - Nombre del grupo
+ * @param {Array<string>} newMembers - Lista de usuarios que deben ser miembros del grupo
+ * @returns {Promise<Object>} Información del grupo actualizado
+ */
+export async function updateGroupMembers(groupname, newMembers) {
+  if (!isValidGroupname(groupname)) {
+    throw new Error('Nombre de grupo inválido');
+  }
+  
+  // Validar nombres de usuario
+  for (const member of newMembers) {
+    if (!isValidUsername(member)) {
+      throw new Error(`Nombre de usuario inválido: ${member}`);
+    }
+  }
+  
+  try {
+    // Obtener estado actual del grupo
+    const group = await getGroup(groupname);
+    const currentMembers = group.members || [];
+    
+    const safeGroupname = escapeShellArg(groupname);
+    
+    // Calcular usuarios a añadir (están en newMembers pero no en currentMembers)
+    const toAdd = newMembers.filter(m => !currentMembers.includes(m));
+    
+    // Calcular usuarios a remover (están en currentMembers pero no en newMembers)
+    const toRemove = currentMembers.filter(m => !newMembers.includes(m));
+    
+    console.log(`[SystemUserService] Grupo ${groupname}: añadir [${toAdd.join(', ')}], remover [${toRemove.join(', ')}]`);
+    
+    // Añadir usuarios al grupo usando gpasswd -a
+    for (const username of toAdd) {
+      const safeUsername = escapeShellArg(username);
+      try {
+        await executeCommand(`gpasswd -a ${safeUsername} ${safeGroupname}`);
+      } catch (e) {
+        console.error(`[SystemUserService] Error añadiendo ${username} a ${groupname}:`, e);
+        // Continuar con los demás usuarios
+      }
+    }
+    
+    // Remover usuarios del grupo usando gpasswd -d
+    for (const username of toRemove) {
+      const safeUsername = escapeShellArg(username);
+      try {
+        await executeCommand(`gpasswd -d ${safeUsername} ${safeGroupname}`);
+      } catch (e) {
+        console.error(`[SystemUserService] Error removiendo ${username} de ${groupname}:`, e);
+        // Continuar con los demás usuarios
+      }
+    }
+    
+    // Retornar estado actualizado del grupo
+    return await getGroup(groupname);
+  } catch (error) {
+    console.error(`[SystemUserService] Error actualizando miembros de ${groupname}:`, error);
+    throw error;
+  }
+}
+
 // Exportar todas las funciones como un objeto para uso conveniente
 export default {
   listUsers,
@@ -363,5 +492,8 @@ export default {
   updateUserGroups,
   deleteUser,
   listGroups,
-  getGroup
+  getGroup,
+  createGroup,
+  deleteGroup,
+  updateGroupMembers
 };

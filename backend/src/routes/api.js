@@ -10,7 +10,11 @@ import {
   updateUserValidation,
   updateUserGroupsValidation,
   deleteUserValidation,
-  getUserValidation
+  getUserValidation,
+  createGroupValidation,
+  getGroupValidation,
+  deleteGroupValidation,
+  updateGroupMembersValidation
 } from '../middleware/validators.js';
 
 const router = Router();
@@ -74,6 +78,26 @@ router.get('/groups', groupController.listGroups);
  * GET /api/groups/:groupname
  * Obtiene información de un grupo específico
  */
-router.get('/groups/:groupname', groupController.getGroup);
+router.get('/groups/:groupname', getGroupValidation, groupController.getGroup);
+
+/**
+ * POST /api/groups
+ * Crea un nuevo grupo
+ * Body: { name: string }
+ */
+router.post('/groups', createGroupValidation, groupController.createGroup);
+
+/**
+ * PUT /api/groups/:groupname/members
+ * Actualiza los miembros de un grupo
+ * Body: { members: string[] }
+ */
+router.put('/groups/:groupname/members', updateGroupMembersValidation, groupController.updateGroupMembers);
+
+/**
+ * DELETE /api/groups/:groupname
+ * Elimina un grupo
+ */
+router.delete('/groups/:groupname', deleteGroupValidation, groupController.deleteGroup);
 
 export default router;
